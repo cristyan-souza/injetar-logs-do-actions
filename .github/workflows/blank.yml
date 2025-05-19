@@ -1,4 +1,4 @@
-name: Enviar logs para Loki
+name: Enviar logs para Loki via ngrok
 
 on:
   push:
@@ -8,7 +8,7 @@ jobs:
   enviar-logs:
     runs-on: ubuntu-latest
     steps:
-      - name: Enviar log para Loki local
+      - name: Enviar log para Loki via ngrok
         run: |
           TIMESTAMP=$(($(date +%s%N)))
           JSON=$(jq -n \
@@ -16,6 +16,6 @@ jobs:
             --arg msg "🔧 Log do GitHub Actions enviado em $TIMESTAMP" \
             '{streams: [{stream: {job: "github-actions", level: "info"}, values: [[ $ts, $msg ]]}]}')
           echo "$JSON" > log.json
-          curl -X POST http://<192.168.0.104>:3100/loki/api/v1/push \
+          curl -X POST https://c6b0-2804-348-4e54-8000-654f-9e88-2b9c-b3af.ngrok-free.app/loki/api/v1/push \
             -H "Content-Type: application/json" \
             --data-binary "@log.json"
