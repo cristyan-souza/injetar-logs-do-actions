@@ -1,0 +1,21 @@
+name: Enviar logs para Loki
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  enviar-logs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enviar log para Loki local
+        run: |
+          TIMESTAMP=$(($(date +%s%N)))
+          JSON=$(jq -n \
+            --arg ts "$TIMESTAMP" \
+            --arg msg "🔧 Log do GitHub Actions enviado em $TIMESTAMP" \
+            '{streams: [{stream: {job: "github-actions", level: "info"}, values: [[ $ts, $msg ]]}]}')
+          echo "$JSON" > log.json
+          curl -X POST http://<192.168.0.104>:3100/loki/api/v1/push \
+            -H "Content-Type: application/json" \
+            --data-binary "@log.json"
