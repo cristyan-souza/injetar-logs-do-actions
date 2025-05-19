@@ -1,4 +1,4 @@
-name: Enviar logs para Loki via ngrok
+name: Enviar 10 logs para Loki
 
 on:
   push:
@@ -7,15 +7,19 @@ on:
 jobs:
   enviar-logs:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Enviar log para Loki via ngrok
+      - name: Enviar múltiplos logs para Loki via ngrok
         run: |
-          TIMESTAMP=$(($(date +%s%N)))
-          JSON=$(jq -n \
-            --arg ts "$TIMESTAMP" \
-            --arg msg "🔧 Log do GitHub Actions enviado em $TIMESTAMP" \
-            '{streams: [{stream: {job: "github-actions", level: "info"}, values: [[ $ts, $msg ]]}]}')
-          echo "$JSON" > log.json
-          curl -X POST https://c6b0-2804-348-4e54-8000-654f-9e88-2b9c-b3af.ngrok-free.app/loki/api/v1/push \
-            -H "Content-Type: application/json" \
-            --data-binary "@log.json"
+          for i in {1..10}; do
+            TIMESTAMP=$(($(date +%s%N)))
+            JSON=$(jq -n \
+              --arg ts "$TIMESTAMP" \
+              --arg msg "🧪 Log #$i do GitHub Actions às $TIMESTAMP" \
+              '{streams: [{stream: {job: "github-actions", level: "info"}, values: [[ $ts, $msg ]]}]}')
+            echo "$JSON" > log.json
+            curl -s -X POST https://c6b0-2804-348-4e54-8000-654f-9e88-2b9c-b3af.ngrok-free.app/loki/api/v1/push \
+              -H "Content-Type: application/json" \
+              --data-binary "@log.json"
+            sleep 1
+          done
