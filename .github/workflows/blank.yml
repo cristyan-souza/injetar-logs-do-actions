@@ -18,7 +18,7 @@ jobs:
               --arg msg "🧪 Log #$i do GitHub Actions às $TIMESTAMP" \
               '{streams: [{stream: {job: "github-actions", level: "info"}, values: [[ $ts, $msg ]]}]}')
             echo "$JSON" > log.json
-            curl -s -X POST https://c6b0-2804-348-4e54-8000-654f-9e88-2b9c-b3af.ngrok-free.app/loki/api/v1/push \
+            curl -s -X POST http://loki.grafana.svc.cluster.local:3100 \
               -H "Content-Type: application/json" \
               --data-binary "@log.json"
             sleep 1
