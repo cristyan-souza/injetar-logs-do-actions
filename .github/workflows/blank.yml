@@ -9,16 +9,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Enviar múltiplos logs para Loki via ngrok
+      - name: Enviar múltiplos logs para Loki (via endpoint publico)
         run: |
           for i in {1..10}; do
             TIMESTAMP=$(($(date +%s%N)))
             JSON=$(jq -n \
               --arg ts "$TIMESTAMP" \
-              --arg msg "🧪 Log #$i do GitHub Actions às $TIMESTAMP" \
+              --arg msg "Log #$i do GitHub Actions às $TIMESTAMP" \
               '{streams: [{stream: {job: "github-actions", level: "info"}, values: [[ $ts, $msg ]]}]}')
             echo "$JSON" > log.json
-            curl -s -X POST http://loki.grafana.svc.cluster.local:3100/loki/api/v1/push\
+            curl -s -X POST https://loki-apps.rmfarma.io/loki/api/v1/push\
               -H "Content-Type: application/json" \
               --data-binary "@log.json"
             sleep 1
